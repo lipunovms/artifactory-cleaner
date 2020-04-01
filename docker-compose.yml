@@ -1,0 +1,10 @@
+version: "2"
+
+services:
+  artifactory_cleaner:
+    build:
+      context: .
+    network_mode: host
+    env_file:
+      - .env
+    
