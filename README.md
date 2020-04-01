@@ -20,7 +20,7 @@ lipunovms/artifactory_cleaner:latest
 ## Environment variables:
 
 - ARTIFACTORY_URL - artifactory url
-- ARTIFACTORY_TOKEN - artifactory access token (preffered auth method)
+- ARTIFACTORY_TOKEN - artifactory access token
 - REPOSITORIES=repo1,repo2 - repositories list comma-separated (without spaces)
 - SLEEP_SECONDS_BETWEEN_DELETION - time between artifacts deletion in seconds(default: 0.1)
 - DRY_RUN - dry run mode, just to show information and artifacts will be deleted (available values: True or False, default: False)
