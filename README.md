@@ -23,8 +23,8 @@ lipunovms/artifactory_cleaner:latest
 - ARTIFACTORY_TOKEN - artifactory access token (preffered auth method)
 - REPOSITORIES=repo1,repo2 - repositories list comma-separated (without spaces)
 - SLEEP_SECONDS_BETWEEN_DELETION - time between artifacts deletion in seconds(default: 0.1)
-- DRY_RUN - dry run mode, just to show information and artifacts will be deleted (available values: True or False)
-- SHOW_ARTIFACTS_LOG - show in logs artifacts that will be deleted (available values: True or False)
+- DRY_RUN - dry run mode, just to show information and artifacts will be deleted (available values: True or False, default: False)
+- SHOW_ARTIFACTS_LOG - show in logs artifacts that will be deleted (available values: True or False, default: False)
 - ARTIFACTORY_LOGIN - artifactory username (used only if token is not defined)
 - ARTIFACTORY_PASSWORD - artifactory password (used only if token is not defined)
 - KEEP_ARTIFACT_CREATED - how many days to store orienting to artifact`s creation date
