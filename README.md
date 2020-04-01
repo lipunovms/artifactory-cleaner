@@ -25,8 +25,6 @@ lipunovms/artifactory_cleaner:latest
 - SLEEP_SECONDS_BETWEEN_DELETION - time between artifacts deletion in seconds(default: 0.1)
 - DRY_RUN - dry run mode, just to show information and artifacts will be deleted (available values: True or False, default: False)
 - SHOW_ARTIFACTS_LOG - show in logs artifacts that will be deleted (available values: True or False, default: False)
-- ARTIFACTORY_LOGIN - artifactory username (used only if token is not defined)
-- ARTIFACTORY_PASSWORD - artifactory password (used only if token is not defined)
 - KEEP_ARTIFACT_CREATED - how many days to store orienting to artifact`s creation date
 - KEEP_ARTIFACT_DOWNLOADED - how many days to store orienting to artifact`s last download date
 - KEEP_ARTIFACT_UPDATED - how many days to store orienting to artifact`s updation date
