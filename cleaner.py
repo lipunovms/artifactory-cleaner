@@ -84,7 +84,7 @@ def remove_artifacts(artifacts, repo_type):
 def get_artifacts(repository,repo_type=None):
     if artifactory_version <= version.parse("6.1.0"):
         datetime_format = '%Y-%m-%dT%H:%M:%S.%f%z'
-        tz = datetime.timezone.utc
+        tz = timezone.utc
     else:
         datetime_format = '%Y-%m-%dT%H:%M:%S.%fZ'
         tz = None
