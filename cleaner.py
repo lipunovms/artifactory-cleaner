@@ -5,6 +5,7 @@ import time
 import os
 from datetime import datetime
 import requests
+from prettytable import PrettyTable
 
 if "SOCKS5_PROXY_HOST" in os.environ and "SOCKS5_PROXY_PORT" in os.environ:
     import socks
@@ -13,9 +14,7 @@ if "SOCKS5_PROXY_HOST" in os.environ and "SOCKS5_PROXY_PORT" in os.environ:
     socket.socket = socks.socksocket
 
 ARTIFACTORY_URL = os.environ["ARTIFACTORY_URL"]
-
 ARTIFACTORY_TOKEN = os.environ["ARTIFACTORY_TOKEN"]
-
 REPOSITORIES = os.environ["REPOSITORIES"].split(",")
 
 if "SLEEP_SECONDS_BETWEEN_DELETION" in os.environ:
@@ -23,8 +22,8 @@ if "SLEEP_SECONDS_BETWEEN_DELETION" in os.environ:
 else:
     SLEEP_SECONDS_BETWEEN_DELETION = 0.1
 
-if "GLOBAL_KEEP_DAYS" in os.environ:
-    KEEP_ARTIFACT_CREATED = KEEP_ARTIFACT_DOWNLOADED = KEEP_ARTIFACT_UPDATED = KEEP_ARTIFACT_MODIFIED = int(os.environ["GLOBAL_KEEP_DAYS"])
+if "KEEP_ARTIFACT_GLOBAL" in os.environ:
+    KEEP_ARTIFACT_CREATED = KEEP_ARTIFACT_DOWNLOADED = KEEP_ARTIFACT_UPDATED = KEEP_ARTIFACT_MODIFIED = int(os.environ["KEEP_ARTIFACT_GLOBAL"])
 else:
     KEEP_ARTIFACT_CREATED = int(os.environ["KEEP_ARTIFACT_CREATED"])
     KEEP_ARTIFACT_DOWNLOADED = int(os.environ["KEEP_ARTIFACT_DOWNLOADED"])
@@ -65,23 +64,31 @@ def http_request_delete(url, data=None):
     response = requests.delete(url, headers=headers, data=data, verify=False)
 
 
-def remove_artifacts(artifacts):
-    for artifact in artifacts:
+def remove_artifacts(artifacts, repo_type):
+    for artifact,downloaded_ago in artifacts.items():
+        if repo_type == "docker":
+            artifact = artifact.replace("/manifest.json","")
+
         if DRY_RUN != True:
             http_request_delete(ARTIFACTORY_URL+"/"+artifact)
             time.sleep(SLEEP_SECONDS_BETWEEN_DELETION)
 
             if SHOW_ARTIFACTS_LOG:
-                print(artifact)
+                print(downloaded_ago, artifact)
         else:
             if SHOW_ARTIFACTS_LOG:
-                print(artifact)
-            
+                print(downloaded_ago, artifact)
 
-def get_artifacts(repository):
-    artifacts_json = http_request_post(ARTIFACTORY_URL+"/api/search/aql",data='items.find({"repo":"%s","type":"any"}).include("stat")' % repository)
 
-    artifacts_to_delete = []
+def get_artifacts(repository,repo_type=None):
+    if repo_type == 'docker':
+        artifacts_filter = '"name":"manifest.json"'
+    else:
+        artifacts_filter = '"type":"any"'
+
+    artifacts_json = http_request_post(ARTIFACTORY_URL+"/api/search/aql",data='items.find({"repo":"%s",%s}).include("stat")' % (repository, artifacts_filter))
+
+    artifacts_to_delete = {}
     size_to_delete = 0
 
     for artifact in artifacts_json["results"]:
@@ -107,20 +114,39 @@ def get_artifacts(repository):
                 modified_ago = datetime.today() - artifact_modified
 
                 if downloaded_ago.days > KEEP_ARTIFACT_DOWNLOADED and created_ago.days > KEEP_ARTIFACT_CREATED and updated_ago.days > KEEP_ARTIFACT_UPDATED and modified_ago.days > KEEP_ARTIFACT_MODIFIED:
-                    artifacts_to_delete.append(artifact_repo+"/"+artifact_path+"/"+artifact_name)
+                    # artifacts_to_delete.append(artifact_repo+"/"+artifact_path+"/"+artifact_name)
+                    artifacts_to_delete[artifact_repo+"/"+artifact_path+"/"+artifact_name] = downloaded_ago.days
                     size_to_delete = size_to_delete + int(artifact_size)
 
+    artifacts_to_delete = {k: v for k, v in sorted(artifacts_to_delete.items(), key=lambda item: item[1])}
     return artifacts_to_delete,size_to_delete
 
 
+statistics = PrettyTable()
+statistics.field_names = ["Repositry", "Repository type", "Artifacts deleted", "MB deleted"]
+
 for repository in REPOSITORIES:
     repository_info = http_request_get(ARTIFACTORY_URL+"/api/repositories/{}".format(repository))
-    if repository_info["packageType"] in ["npm", "maven", "generic", "gems"]:
-        artifacts_to_delete,size_to_delete = get_artifacts(repository)
-        print(50*"#")
-        print(repository,":",repository_info["packageType"], end=" : ")
-        print(len(artifacts_to_delete)," artifacts, ",round(size_to_delete/1024/1024), " MB will be removed", sep="")
+    if repository_info["packageType"] in ["npm", "maven", "generic", "gems", "docker"]:
+        repo_type = repository_info["packageType"]
+        artifacts_to_delete,size_to_delete = get_artifacts(repository, repo_type)
         
-        remove_artifacts(artifacts_to_delete)
-        print(len(artifacts_to_delete)," artifacts, ",round(size_to_delete/1024/1024), " MB were removed", sep="")
+        print(50*"#")
+        print("Repository: ", repository, ", Type: ", repo_type)
+
+        remove_artifacts(artifacts_to_delete, repo_type)
+
+        if repo_type == "docker":
+            statistics.add_row([repository, repo_type, len(artifacts_to_delete), "?"])
+        else:
+            statistics.add_row([repository, repo_type, len(artifacts_to_delete), round(size_to_delete/1024/1024)])
         print()
+
+statistics.sortby = "Artifacts deleted"
+statistics.reversesort = True
+print(statistics)
+
+print("DRY_RUN=", DRY_RUN, sep="")
+for k, v in os.environ.items():
+    if "KEEP_ARTIFACT_" in k:
+        print(f'{k}={v}')

@@ -12,7 +12,7 @@ docker run -e ARTIFACTORY_URL=https://your.artifactory.com/artifactory \
 -e SLEEP_SECONDS_BETWEEN_DELETION=0.05 \
 -e DRY_RUN=True \
 -e REPOSITORIES=your_repo \
--e GLOBAL_KEEP_DAYS=180 \
+-e KEEP_ARTIFACT_GLOBAL=180 \
 -e SHOW_ARTIFACTS_LOG=True \
 lipunovms/artifactory_cleaner:latest
 ```
@@ -29,7 +29,7 @@ lipunovms/artifactory_cleaner:latest
 - KEEP_ARTIFACT_DOWNLOADED - how many days to store orienting to artifact`s last download date
 - KEEP_ARTIFACT_UPDATED - how many days to store orienting to artifact`s updation date
 - KEEP_ARTIFACT_MODIFIED - how many days to store orienting to artifact`s modification date
-- GLOBAL_KEEP_DAYS - how many days to store, this variable overrides previous KEEP_ARTIFACT-* variables and can be used instead
+- KEEP_ARTIFACT_GLOBAL - how many days to store, this variable overrides previous KEEP_ARTIFACT-* variables and can be used instead
 - ARTIFACTS_BLACKLIST - artifacts list comma-separated(without spaces) that will ignored
 - SOCKS5_PROXY_HOST - socks5 proxy host (proxy used if both SOCKS5_PROXY_HOST and SOCKS5_PROXY_PORT are defined)
 - SOCKS5_PROXY_PORT socks5 proxy port (proxy used if both SOCKS5_PROXY_HOST and SOCKS5_PROXY_PORT are defined)
