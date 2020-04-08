@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 import requests
 from prettytable import PrettyTable
+from packaging import version
 
 if "SOCKS5_PROXY_HOST" in os.environ and "SOCKS5_PROXY_PORT" in os.environ:
     import socks
@@ -81,6 +82,11 @@ def remove_artifacts(artifacts, repo_type):
 
 
 def get_artifacts(repository,repo_type=None):
+    if artifactory_version <= version.parse("6.1.0"):
+        datetime_format = '%Y-%m-%dT%H:%M:%S.%f%Z'
+    else:
+        datetime_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+
     if repo_type == 'docker':
         artifacts_filter = '"name":"manifest.json"'
     else:
@@ -97,12 +103,12 @@ def get_artifacts(repository,repo_type=None):
         artifact_name = artifact["name"]
         artifact_type = artifact["type"]
         artifact_size = artifact["size"]
-        artifact_created = datetime.strptime(artifact["created"], '%Y-%m-%dT%H:%M:%S.%fZ')
-        artifact_updated = datetime.strptime(artifact["updated"], '%Y-%m-%dT%H:%M:%S.%fZ')
-        artifact_modified = datetime.strptime(artifact["modified"], '%Y-%m-%dT%H:%M:%S.%fZ')
+        artifact_created = datetime.strptime(artifact["created"], datetime_format)
+        artifact_updated = datetime.strptime(artifact["updated"], datetime_format)
+        artifact_modified = datetime.strptime(artifact["modified"], datetime_format)
 
         artifact_downloaded = artifact["stats"][0].get("downloaded","never")
-        if artifact_downloaded != "never": artifact_downloaded = datetime.strptime(artifact["stats"][0].get("downloaded","never"), '%Y-%m-%dT%H:%M:%S.%fZ')
+        if artifact_downloaded != "never": artifact_downloaded = datetime.strptime(artifact["stats"][0].get("downloaded","never"), datetime_format)
 
         artifact_downloads = artifact["stats"][0]["downloads"]
 
@@ -121,6 +127,8 @@ def get_artifacts(repository,repo_type=None):
     artifacts_to_delete = {k: v for k, v in sorted(artifacts_to_delete.items(), key=lambda item: item[1])}
     return artifacts_to_delete,size_to_delete
 
+
+artifactory_version = version.parse(http_request_get(ARTIFACTORY_URL+"/api/system/version")["version"])
 
 statistics = PrettyTable()
 statistics.field_names = ["Repositry", "Repository type", "Artifacts deleted", "MB deleted"]
@@ -150,3 +158,6 @@ print("DRY_RUN=", DRY_RUN, sep="")
 for k, v in os.environ.items():
     if "KEEP_ARTIFACT_" in k:
         print(f'{k}={v}')
+
+
+print(artifactory_version < version.parse("6.10.1"))
