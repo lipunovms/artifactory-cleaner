@@ -161,6 +161,3 @@ print("DRY_RUN=", DRY_RUN, sep="")
 for k, v in os.environ.items():
     if "KEEP_ARTIFACT_" in k:
         print(f'{k}={v}')
-
-
-print(artifactory_version < version.parse("6.10.1"))
