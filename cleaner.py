@@ -3,7 +3,7 @@
 import json
 import time
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 import requests
 from prettytable import PrettyTable
 from packaging import version
@@ -84,8 +84,10 @@ def remove_artifacts(artifacts, repo_type):
 def get_artifacts(repository,repo_type=None):
     if artifactory_version <= version.parse("6.1.0"):
         datetime_format = '%Y-%m-%dT%H:%M:%S.%f%z'
+        tz = datetime.timezone.utc
     else:
         datetime_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+        tz = None
 
     if repo_type == 'docker':
         artifacts_filter = '"name":"manifest.json"'
@@ -114,10 +116,11 @@ def get_artifacts(repository,repo_type=None):
 
         if artifact_downloaded != "never" and artifact_type != "folder":
             if artifact_name not in ARTIFACTS_BLACKLIST:
-                downloaded_ago = datetime.today() - artifact_downloaded
-                created_ago = datetime.today() - artifact_created
-                updated_ago = datetime.today() - artifact_updated
-                modified_ago = datetime.today() - artifact_modified
+
+                downloaded_ago = datetime.now(tz) - artifact_downloaded
+                created_ago = datetime.now(tz) - artifact_created
+                updated_ago = datetime.now(tz) - artifact_updated
+                modified_ago = datetime.now(tz) - artifact_modified
 
                 if downloaded_ago.days > KEEP_ARTIFACT_DOWNLOADED and created_ago.days > KEEP_ARTIFACT_CREATED and updated_ago.days > KEEP_ARTIFACT_UPDATED and modified_ago.days > KEEP_ARTIFACT_MODIFIED:
                     # artifacts_to_delete.append(artifact_repo+"/"+artifact_path+"/"+artifact_name)
