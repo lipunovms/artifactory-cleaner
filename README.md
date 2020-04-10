@@ -1,5 +1,5 @@
 ## Artifactory cleaner
-It removes old artifacts from your artifactory server. Available types of repositories(tested): maven, npm, gems, generic.
+It removes old artifacts from your artifactory server. Available types of repositories(tested): maven, npm, gems, generic, docker.
 
 ## How to use:
 `docker-compose up`
