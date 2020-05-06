@@ -110,11 +110,14 @@ def get_artifacts(repository,repo_type=None):
         artifact_modified = datetime.strptime(artifact["modified"], datetime_format)
 
         artifact_downloaded = artifact["stats"][0].get("downloaded","never")
-        if artifact_downloaded != "never": artifact_downloaded = datetime.strptime(artifact["stats"][0].get("downloaded","never"), datetime_format)
+        if artifact_downloaded != "never":
+            artifact_downloaded = datetime.strptime(artifact["stats"][0].get("downloaded","never"), datetime_format)
+        else:
+            artifact_downloaded = artifact_created
 
         artifact_downloads = artifact["stats"][0]["downloads"]
 
-        if artifact_downloaded != "never" and artifact_type != "folder":
+        if artifact_type != "folder":
             if artifact_name not in ARTIFACTS_BLACKLIST:
 
                 downloaded_ago = datetime.now(tz) - artifact_downloaded
