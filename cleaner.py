@@ -176,7 +176,8 @@ statistics.reversesort = True
 print(statistics)
 
 print("DRY_RUN=", DRY_RUN, sep="")
+print("ARTIFACTS_FILTER=", ARTIFACTS_FILTER, sep="")
 for k, v in os.environ.items():
     if "KEEP_ARTIFACT_" in k:
         print(f'{k}={v}')
-print(ARTIFACTS_FILTER)
+
