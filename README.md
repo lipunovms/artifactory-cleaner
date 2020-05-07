@@ -22,6 +22,7 @@ lipunovms/artifactory_cleaner:latest
 - ARTIFACTORY_URL - artifactory url
 - ARTIFACTORY_TOKEN - artifactory access token
 - REPOSITORIES=repo1,repo2 - repositories list comma-separated (without spaces)
+- ARTIFACTS_FILTER - include only artifacts with ARTIFACTS_FILTER in full path
 - SLEEP_SECONDS_BETWEEN_DELETION - time between artifacts deletion in seconds(default: 0.1)
 - DRY_RUN - dry run mode, just to show information and artifacts will be deleted (available values: True or False, default: False)
 - SHOW_ARTIFACTS_LOG - show in logs artifacts that will be deleted (available values: True or False, default: False)

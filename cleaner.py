@@ -18,6 +18,13 @@ ARTIFACTORY_URL = os.environ["ARTIFACTORY_URL"]
 ARTIFACTORY_TOKEN = os.environ["ARTIFACTORY_TOKEN"]
 REPOSITORIES = os.environ["REPOSITORIES"].split(",")
 
+if "ARTIFACTS_FILTER" in os.environ:
+    ARTIFACTS_FILTER = os.environ["ARTIFACTS_FILTER"]
+    if ARTIFACTS_FILTER == '""' or ARTIFACTS_FILTER == "''":
+        ARTIFACTS_FILTER = ""
+else:
+    ARTIFACTS_FILTER = ""
+
 if "SLEEP_SECONDS_BETWEEN_DELETION" in os.environ:
     SLEEP_SECONDS_BETWEEN_DELETION = float(os.environ["SLEEP_SECONDS_BETWEEN_DELETION"])
 else:
@@ -126,9 +133,17 @@ def get_artifacts(repository,repo_type=None):
                 modified_ago = datetime.now(tz) - artifact_modified
 
                 if downloaded_ago.days > KEEP_ARTIFACT_DOWNLOADED and created_ago.days > KEEP_ARTIFACT_CREATED and updated_ago.days > KEEP_ARTIFACT_UPDATED and modified_ago.days > KEEP_ARTIFACT_MODIFIED:
-                    # artifacts_to_delete.append(artifact_repo+"/"+artifact_path+"/"+artifact_name)
-                    artifacts_to_delete[artifact_repo+"/"+artifact_path+"/"+artifact_name] = downloaded_ago.days
-                    size_to_delete = size_to_delete + int(artifact_size)
+                    full_artifact_path = artifact_repo+"/"+artifact_path+"/"+artifact_name
+
+                    if ARTIFACTS_FILTER:
+                        if ARTIFACTS_FILTER in full_artifact_path:
+                            artifacts_to_delete[full_artifact_path] = downloaded_ago.days
+                            size_to_delete = size_to_delete + int(artifact_size)
+                    else:
+                        artifacts_to_delete[full_artifact_path] = downloaded_ago.days
+                        size_to_delete = size_to_delete + int(artifact_size)
+                
+                    
 
     artifacts_to_delete = {k: v for k, v in sorted(artifacts_to_delete.items(), key=lambda item: item[1])}
     return artifacts_to_delete,size_to_delete
@@ -164,3 +179,4 @@ print("DRY_RUN=", DRY_RUN, sep="")
 for k, v in os.environ.items():
     if "KEEP_ARTIFACT_" in k:
         print(f'{k}={v}')
+print(ARTIFACTS_FILTER)
