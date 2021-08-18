@@ -48,6 +48,16 @@ if os.environ["DRY_RUN"].lower() in ["true", "1", "yes"]:
 else:
     DRY_RUN = False
 
+if os.environ["EMPTY_TRASH_CAN"].lower() in ["true", "1", "yes"]:
+    EMPTY_TRASH_CAN = True
+else:
+    EMPTY_TRASH_CAN = False
+
+if os.environ["RUN_GARBAGE_COLLECTION"].lower() in ["true", "1", "yes"]:
+    RUN_GARBAGE_COLLECTION = True
+else:
+    RUN_GARBAGE_COLLECTION = False
+
 if os.environ["SHOW_ARTIFACTS_LOG"].lower() in ["true", "1", "yes"]:
     SHOW_ARTIFACTS_LOG = True
 else:
@@ -70,6 +80,14 @@ def http_request_get(url):
 def http_request_delete(url, data=None):
     headers = { 'X-JFrog-Art-Api' : ARTIFACTORY_TOKEN, 'Content-Type': 'text/plain' }    
     response = requests.delete(url, headers=headers, data=data, verify=False)
+
+
+def empty_trash_can():
+    http_request_post(ARTIFACTORY_URL+"/api/trash/empty")
+
+
+def run_garbage_collection():
+    http_request_post(ARTIFACTORY_URL+"/api/system/storage/gc")
 
 
 def remove_artifacts(artifacts, repo_type):
@@ -170,6 +188,13 @@ for repository in REPOSITORIES:
         else:
             statistics.add_row([repository, repo_type, len(artifacts_to_delete), round(size_to_delete/1024/1024)])
         print()
+
+if EMPTY_TRASH_CAN:
+    empty_trash_can()
+    time.sleep(5)
+
+if RUN_GARBAGE_COLLECTION:
+    run_garbage_collection()
 
 statistics.sortby = "Artifacts deleted"
 statistics.reversesort = True

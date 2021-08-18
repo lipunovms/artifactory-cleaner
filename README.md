@@ -34,4 +34,5 @@ lipunovms/artifactory_cleaner:latest
 - ARTIFACTS_BLACKLIST - artifacts list comma-separated(without spaces) that will ignored
 - SOCKS5_PROXY_HOST - socks5 proxy host (proxy used if both SOCKS5_PROXY_HOST and SOCKS5_PROXY_PORT are defined)
 - SOCKS5_PROXY_PORT socks5 proxy port (proxy used if both SOCKS5_PROXY_HOST and SOCKS5_PROXY_PORT are defined)
-
+- EMPTY_TRASH_CAN - empty trash can after artifacts deletion
+- RUN_GARBAGE_COLLECTION -  run garbage collection procedure after artifacts deletion
