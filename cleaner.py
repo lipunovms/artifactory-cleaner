@@ -83,11 +83,13 @@ def http_request_delete(url, data=None):
 
 
 def empty_trash_can():
-    http_request_post(ARTIFACTORY_URL+"/api/trash/empty")
+    headers = { 'X-JFrog-Art-Api' : ARTIFACTORY_TOKEN, 'Content-Type': 'text/plain' }
+    requests.post(ARTIFACTORY_URL+"/api/trash/empty", headers=headers, data=None, verify=False)
 
 
 def run_garbage_collection():
-    http_request_post(ARTIFACTORY_URL+"/api/system/storage/gc")
+    headers = { 'X-JFrog-Art-Api' : ARTIFACTORY_TOKEN, 'Content-Type': 'text/plain' }
+    requests.post(ARTIFACTORY_URL+"/api/system/storage/gc", headers=headers, data=None, verify=False)
 
 
 def remove_artifacts(artifacts, repo_type):
